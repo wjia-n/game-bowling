@@ -276,7 +276,6 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
 
   Widget _playerRow(AlleyThemeDef t, int p) {
     final player = _e.players[p];
-    final fr = _e.frames[p];
     final active = p == _e.turn && !_e.over;
     return Container(
       margin: const EdgeInsets.only(bottom: 4),
@@ -427,7 +426,7 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
               Text(
                   draw
                       ? "It's a draw! 🤝"
-                      : '${_e.players[w!].name} wins!',
+                      : '${_e.players[w].name} wins!',
                   style: Alley.display(28, theme: t),
                   textAlign: TextAlign.center),
               const SizedBox(height: 8),

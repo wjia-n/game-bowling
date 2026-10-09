@@ -81,7 +81,7 @@ class BowlingEngine extends ChangeNotifier {
   final List<Bowler> players;
   final int botDifficulty; // 0 easy, 1 medium, 2 hard
 
-  late List<List<int>> frames; // per player: 10 frames of pin counts
+  late List<List<List<int>>> frames; // per player: 10 frames of throw pin-counts
   int turn = 0;
   int frameIdx = 0;
   BowlPhase phase = BowlPhase.aiming;

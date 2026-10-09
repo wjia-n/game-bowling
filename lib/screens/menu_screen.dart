@@ -7,7 +7,6 @@ import '../services/iap_service.dart';
 import '../services/settings_service.dart';
 import '../theme/alley_style.dart';
 import '../theme/alley_themes.dart';
-import 'custom_theme_screen.dart';
 import 'game_screen.dart';
 import 'pro_screen.dart';
 import 'settings_screen.dart';
@@ -417,91 +416,6 @@ class _MenuScreenState extends State<MenuScreen> {
       ],
     );
   }
-}
-
-/// Editable player-name field with a persistent controller.
-///
-/// Saves on every keystroke (never only on keyboard-done) and commits on
-/// focus loss. The controller is created once in initState — recreating it
-/// in build would jump the cursor and lose the user's edit on every
-/// keystroke.
-class _NameField extends StatefulWidget {
-  final AlleyThemeDef t;
-  final String? label; // null = side label shown elsewhere, no field label
-  final String initial;
-  final ValueChanged<String> onChanged;
-  final ValueChanged<String> onCommitted;
-
-  const _NameField({
-    required this.t,
-    required this.label,
-    required this.initial,
-    required this.onChanged,
-    required this.onCommitted,
-  });
-
-  @override
-  State<_NameField> createState() => _NameFieldState();
-}
-
-class _NameFieldState extends State<_NameField> {
-  late final TextEditingController _c;
-  late final FocusNode _focus;
-
-  @override
-  void initState() {
-    super.initState();
-    _c = TextEditingController(text: widget.initial);
-    _focus = FocusNode();
-    _focus.addListener(_onFocus);
-  }
-
-  void _onFocus() {
-    if (!_focus.hasFocus) widget.onCommitted(_c.text);
-  }
-
-  @override
-  void didUpdateWidget(covariant _NameField old) {
-    super.didUpdateWidget(old);
-    if (old.initial != widget.initial && _c.text != widget.initial) {
-      _c.text = widget.initial;
-    }
-  }
-
-  @override
-  void dispose() {
-    _focus.removeListener(_onFocus);
-    _focus.dispose();
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return TextField(
-      controller: _c,
-      focusNode: _focus,
-      style: Alley.body(15, theme: widget.t),
-      maxLength: 14,
-      decoration: InputDecoration(
-        labelText: widget.label,
-        labelStyle: Alley.body(12, theme: widget.t, color: widget.t.muted),
-        counterText: '',
-        isDense: true,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        filled: true,
-        fillColor: Colors.black.withValues(alpha: 0.3),
-        border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide.none),
-      ),
-      onChanged: widget.onChanged,
-      onSubmitted: widget.onCommitted,
-    );
-  }
-}
-
   // ---------------------------------------------------------------- themes
   Widget _themeGrid(AlleyThemeDef t) {
     final themes = [
@@ -708,6 +622,89 @@ class _NameFieldState extends State<_NameField> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Editable player-name field with a persistent controller.
+///
+/// Saves on every keystroke (never only on keyboard-done) and commits on
+/// focus loss. The controller is created once in initState — recreating it
+/// in build would jump the cursor and lose the user's edit on every
+/// keystroke.
+class _NameField extends StatefulWidget {
+  final AlleyThemeDef t;
+  final String? label; // null = side label shown elsewhere, no field label
+  final String initial;
+  final ValueChanged<String> onChanged;
+  final ValueChanged<String> onCommitted;
+
+  const _NameField({
+    required this.t,
+    required this.label,
+    required this.initial,
+    required this.onChanged,
+    required this.onCommitted,
+  });
+
+  @override
+  State<_NameField> createState() => _NameFieldState();
+}
+
+class _NameFieldState extends State<_NameField> {
+  late final TextEditingController _c;
+  late final FocusNode _focus;
+
+  @override
+  void initState() {
+    super.initState();
+    _c = TextEditingController(text: widget.initial);
+    _focus = FocusNode();
+    _focus.addListener(_onFocus);
+  }
+
+  void _onFocus() {
+    if (!_focus.hasFocus) widget.onCommitted(_c.text);
+  }
+
+  @override
+  void didUpdateWidget(covariant _NameField old) {
+    super.didUpdateWidget(old);
+    if (old.initial != widget.initial && _c.text != widget.initial) {
+      _c.text = widget.initial;
+    }
+  }
+
+  @override
+  void dispose() {
+    _focus.removeListener(_onFocus);
+    _focus.dispose();
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: _c,
+      focusNode: _focus,
+      style: Alley.body(15, theme: widget.t),
+      maxLength: 14,
+      decoration: InputDecoration(
+        labelText: widget.label,
+        labelStyle: Alley.body(12, theme: widget.t, color: widget.t.muted),
+        counterText: '',
+        isDense: true,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        filled: true,
+        fillColor: Colors.black.withValues(alpha: 0.3),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide.none),
+      ),
+      onChanged: widget.onChanged,
+      onSubmitted: widget.onCommitted,
     );
   }
 }
