@@ -65,7 +65,7 @@ class AlleySettings extends ChangeNotifier {
   int humanWins = 0;
   int bestScore = 0;
   int strikes = 0;
-  bool isPro = false;
+  bool isPro = true; // everything unlocked — no Pro version
 
   /// Custom alley colors (ARGB ints). Defaults mirror Classic Maple.
   Map<String, int> customColors = Map.of(_defaultCustomColors);
@@ -136,7 +136,7 @@ class AlleySettings extends ChangeNotifier {
     humanWins = p.getInt(_kWins) ?? 0;
     bestScore = p.getInt(_kBest) ?? 0;
     strikes = p.getInt(_kStrikes) ?? 0;
-    isPro = p.getBool(_kIsPro) ?? false;
+    isPro = true; // everything unlocked
     for (final k in _defaultCustomColors.keys) {
       customColors[k] =
           p.getInt('$_kCustomPrefix$k') ?? _defaultCustomColors[k]!;
