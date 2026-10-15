@@ -17,6 +17,9 @@ import 'package:audioplayers/audioplayers.dart';
 ///   resumes exactly where it left off instead of restarting or dying.
 /// - Every public method catches player errors; audio can never crash the app.
 class AlleyAudio {
+  /// Per-game pitch character (bowling): 0.98x. Makes SFX unique.
+  static const double _pitchMul = 0.980;
+
   static const int _rate = 22050;
   final AudioPlayer _sfx = AudioPlayer();
   final AudioPlayer _music = AudioPlayer();
@@ -103,6 +106,8 @@ class AlleyAudio {
 
   List<double> _tone(double freq, double secs,
       {double freqEnd = 0, double attack = 0.02, double harmonics = 0.25}) {
+    freq *= _pitchMul;
+    freqEnd *= _pitchMul;
     final n = (_rate * secs).round();
     final out = List<double>.filled(n, 0);
     for (int i = 0; i < n; i++) {
@@ -225,54 +230,44 @@ class AlleyAudio {
       _cache.putIfAbsent(key, () => _wav(build()));
 
   Uint8List _menuBytes() => _clip('music_menu', () {
-        // Warm lounge-jazz loop: mellow chords + walking bass, 16s.
-        final chords = [
-          [196.0, 246.94, 293.66], // G
-          [174.61, 220.0, 261.63], // F
-          [146.83, 196.0, 246.94], // Dm
-          [196.0, 246.94, 329.63], // G add
-        ];
-        final out = <double>[];
-        for (final chord in chords) {
-          out.addAll(_padChord(chord, 4.0));
-        }
-        // Walking bass line over the top.
-        final bass = [98.0, 87.31, 73.42, 98.0, 110.0, 87.31, 82.41, 98.0];
-        final n = (_rate * 16).round();
-        while (out.length < n) {
-          out.add(0);
-        }
-        for (int k = 0; k < bass.length; k++) {
-          final start = (n * k / bass.length).round();
-          final tone = _tone(bass[k], 0.5, harmonics: 0.15);
-          for (int i = 0; i < tone.length && start + i < n; i++) {
-            out[start + i] += tone[i] * 0.4;
+        // D bass + melody 0 – 5 – 3 – 4, 16s loop. Unique to bowling.
+        final bassNotes = [73.42, 123.47, 98.00, 110.00];
+        final melNotes = [440.00, 739.98, 587.32, 659.24];
+        final out = List<double>.filled((_rate * 16).round(), 0);
+        final segLen = (_rate * 4).round();
+        for (int s = 0; s < 4; s++) {
+          final bass = _tone(bassNotes[s], 3.5, harmonics: 0.4);
+          final mel = _tone(melNotes[s], 1.2, harmonics: 0.25);
+          for (int i = 0; i < bass.length && s * segLen + i < out.length; i++) {
+            out[s * segLen + i] += bass[i] * 0.5;
+          }
+          final melStart = s * segLen + segLen ~/ 4;
+          for (int i = 0; i < mel.length && melStart + i < out.length; i++) {
+            out[melStart + i] += mel[i] * 0.35;
           }
         }
         return out;
       });
 
+
   Uint8List _gameBytes() => _clip('music_game', () {
-        // Upbeat alley groove: bouncy bass + bright plucks, 12s loop.
-        final out = List<double>.filled((_rate * 12).round(), 0);
-        final bass = [110.0, 110.0, 130.81, 98.0, 110.0, 146.83, 130.81, 98.0];
-        for (int k = 0; k < bass.length; k++) {
-          final start = (out.length * k / bass.length).round();
-          final tone = _tone(bass[k], 0.55, harmonics: 0.3);
-          for (int i = 0; i < tone.length && start + i < out.length; i++) {
-            out[start + i] += tone[i] * 0.5;
-          }
+        // D arpeggiated 0 – 5 – 3 – 4, 16s loop. Unique to bowling.
+        final notes = [146.83, 184.99, 220.00, 184.99, 246.94, 293.66, 369.99, 293.66, 195.99, 246.94, 293.66, 246.94, 220.00, 277.18, 329.62, 277.18];
+        final out = <double>[];
+        final noteLen = 16.0 / notes.length;
+        for (final n in notes) {
+          out.addAll(_tone(n, noteLen * 0.9, harmonics: 0.3));
+          final gap = List<double>.filled((_rate * noteLen * 0.1).round(), 0);
+          out.addAll(gap);
         }
-        final plucks = [440.0, 523.25, 587.33, 523.25, 659.25, 587.33, 523.25, 440.0];
-        for (int k = 0; k < plucks.length; k++) {
-          final start = (out.length * (k * 2 + 1) / (plucks.length * 2)).round();
-          final tone = _tone(plucks[k], 0.28, harmonics: 0.35);
-          for (int i = 0; i < tone.length && start + i < out.length; i++) {
-            out[start + i] += tone[i] * 0.22;
-          }
+        // Soft pad underneath
+        final pad = _padChord([146.83, 184.99, 220.00], 16.0);
+        for (int i = 0; i < out.length && i < pad.length; i++) {
+          out[i] += pad[i] * 0.3;
         }
         return out;
       });
+
 
   // ------------------------------------------------------------------ SFX
   Future<void> _play(Uint8List bytes) async {

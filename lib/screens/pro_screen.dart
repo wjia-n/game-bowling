@@ -75,8 +75,7 @@ class _ProScreenState extends State<ProScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
           children: [
-            if (s.isPro)
-              Container(
+            Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: t.accent.withValues(alpha: 0.25),
@@ -94,79 +93,8 @@ class _ProScreenState extends State<ProScreen> {
                     ),
                   ],
                 ),
-              )
-            else ...[
-              Text('Go PRO, bowl like a legend',
-                  style: Alley.display(24, theme: t)),
-              const SizedBox(height: 4),
-              Text(
-                  'One purchase unlocks everything below — forever.',
-                  style: Alley.body(14, theme: t, color: t.muted)),
-              const SizedBox(height: 14),
-              _comparisonTable(t),
-              const SizedBox(height: 16),
-              ValueListenableBuilder<bool>(
-                valueListenable: store.purchaseInProgress,
-                builder: (_, busy, __) => SizedBox(
-                  height: 56,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: t.accent,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16)),
-                      elevation: 4,
-                    ),
-                    onPressed: busy ? null : () => store.buyPro(),
-                    child: busy
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                                color: Colors.white, strokeWidth: 3),
-                          )
-                        : Text(
-                            store.proProduct != null
-                                ? 'UNLOCK PRO — ${store.proProduct!.price}'
-                                : 'UNLOCK PRO',
-                            style: Alley.label(16, color: Colors.white),
-                          ),
-                  ),
-                ),
               ),
-              if (!store.storeReady)
-                Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: Text(
-                    'Purchases appear here once the store is set up (${store.error ?? 'loading…'}). Nothing here is a fake button.',
-                    style: Alley.body(12, theme: t, color: t.muted),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ValueListenableBuilder<String?>(
-                valueListenable: store.purchaseError,
-                builder: (_, err, __) => err == null
-                    ? const SizedBox.shrink()
-                    : Padding(
-                        padding: const EdgeInsets.only(top: 10),
-                        child: Text(err,
-                            style: Alley.body(13,
-                                theme: t, color: t.playerColors[0]),
-                            textAlign: TextAlign.center),
-                      ),
-              ),
-              const SizedBox(height: 8),
-              Center(
-                child: TextButton(
-                  onPressed: () {
-                    widget.audio.click();
-                    store.restore();
-                  },
-                  child: Text('Restore purchases',
-                      style: Alley.label(14, theme: t)),
-                ),
-              ),
-            ],
+
             const SizedBox(height: 20),
             Text('☕  Tip jar', style: Alley.display(22, theme: t)),
             const SizedBox(height: 4),
@@ -198,69 +126,6 @@ class _ProScreenState extends State<ProScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _comparisonTable(AlleyThemeDef t) {
-    const rows = [
-      ('Alleys', '4 classic', 'All 12 + creator'),
-      ('Ball finishes', '4', 'All 9'),
-      ('Pin paints', '4', 'All 9'),
-      ('Bot difficulty', 'Easy + Medium', 'Easy + Medium + Hard'),
-      ('Alley creator', '—', 'Design your own'),
-    ];
-    return Container(
-      decoration: BoxDecoration(
-        color: t.deck.withValues(alpha: 0.9),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: t.accent.withValues(alpha: 0.35)),
-      ),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-            child: Row(
-              children: [
-                const Spacer(),
-                SizedBox(
-                    width: 96,
-                    child: Text('FREE',
-                        style: Alley.label(12, theme: t, color: t.muted),
-                        textAlign: TextAlign.center)),
-                SizedBox(
-                    width: 110,
-                    child: Text('PRO',
-                        style: Alley.label(12, theme: t),
-                        textAlign: TextAlign.center)),
-              ],
-            ),
-          ),
-          for (final r in rows)
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 7, horizontal: 14),
-              child: Row(
-                children: [
-                  Expanded(
-                      child: Text(r.$1,
-                          style: Alley.body(13, theme: t))),
-                  SizedBox(
-                      width: 96,
-                      child: Text(r.$2,
-                          style: Alley.body(12,
-                              theme: t, color: t.muted),
-                          textAlign: TextAlign.center)),
-                  SizedBox(
-                      width: 110,
-                      child: Text(r.$3,
-                          style: Alley.label(12, theme: t),
-                          textAlign: TextAlign.center)),
-                ],
-              ),
-            ),
-          const SizedBox(height: 6),
-        ],
       ),
     );
   }
