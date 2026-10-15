@@ -61,7 +61,6 @@ class _ProScreenState extends State<ProScreen> {
   @override
   Widget build(BuildContext context) {
     final t = _t;
-    final s = widget.settings;
     final store = widget.store;
     return Scaffold(
       appBar: AppBar(
