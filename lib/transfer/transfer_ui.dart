@@ -320,19 +320,17 @@ class _ReceiveScreenState extends State<_ReceiveScreen> {
 
   Future<void> _pickFile() async {
     try {
-      final result = await FilePicker.platform.pickFiles(
+      // file_picker v13 API: returns List<PlatformFile> directly.
+      final files = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: [SaveTransfer.kFileExtension, 'txt'],
-        withData: true,
       );
-      final file = result?.files.singleOrNull;
+      final file = files.firstOrNull;
       if (file == null) return;
-      String? payload;
-      if (file.bytes != null) {
-        payload = String.fromCharCodes(file.bytes!);
-      }
+      final bytes = await file.readAsBytes();
+      final payload = String.fromCharCodes(bytes);
       if (!mounted) return;
-      if (payload == null || payload.trim().isEmpty) {
+      if (payload.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Could not read that file.')),
         );
