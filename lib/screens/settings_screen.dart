@@ -8,6 +8,7 @@ import '../theme/alley_style.dart';
 import '../theme/alley_themes.dart';
 import 'custom_theme_screen.dart';
 import 'pro_screen.dart';
+import '../transfer/transfer_ui.dart';
 
 /// Settings: music/SFX toggles, volume, renameable players, stats,
 /// alley creator shortcut, Pro.
@@ -44,6 +45,7 @@ class SettingsScreen extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
           children: [
+              TransferSaveTile(gameSlug: 'bowling'),
             _card(t, [
               _switchRow(t, 'Music', 'Menu & alley tunes', s.musicOn,
                   (v) {
