@@ -356,6 +356,42 @@ class BowlingEngine extends ChangeNotifier {
     _afterPhase();
   }
 
+  /// Cheat: resolve the current throw immediately — every standing pin goes
+  /// down and scoring advances normally (strike on ball 1, spare on ball 2).
+  /// If the result is already settling, just fast-forward to the next phase.
+  void cheatSkipThrow() {
+    if (over || paused) return;
+    _timer?.cancel();
+    _timer = null;
+    throwAnim = null;
+    scatter = null;
+    if (phase == BowlPhase.settling) {
+      _advance();
+      return;
+    }
+    knockedThisThrow = Set.of(standing);
+    phase = BowlPhase.scattering;
+    notifyListeners();
+    _settleThrow();
+  }
+
+  /// Cheat: give every human player a perfect 300 and finish the game with
+  /// the human on top. Uses normal scoring so the scorecard stays honest.
+  void cheatInstantWin() {
+    if (over || paused) return;
+    _timer?.cancel();
+    _timer = null;
+    throwAnim = null;
+    scatter = null;
+    for (int p = 0; p < players.length; p++) {
+      if (players[p].isBot) continue;
+      for (int f = 0; f < 10; f++) {
+        frames[p][f] = f < 9 ? [10] : [10, 10, 10];
+      }
+    }
+    _finish();
+  }
+
   String _ballLabel() {
     final r = frames[turn][frameIdx];
     if (frameIdx < 9) return r.isEmpty ? 'Ball 1 of 2' : 'Ball 2 of 2';

@@ -204,6 +204,55 @@ class AlleySettings extends ChangeNotifier {
     await _save();
   }
 
+  /// Unlock everything (cheat menu): Pro on, so all themes, ball/pin
+  /// styles, and hard difficulty stay available.
+  Future<void> unlockAll() async => setPro(true);
+
+  /// Full wipe: clear every persisted key and restore defaults.
+  /// Used by the cheat menu's "Reset game" (unstick recovery).
+  Future<void> resetAll() async {
+    final p = _prefs ?? await SharedPreferences.getInstance();
+    _prefs = p;
+    for (final k in [
+      _kMusic,
+      _kSfx,
+      _kVolume,
+      _kMode,
+      _kDifficulty,
+      _kNames,
+      _kNamesJson,
+      _kTheme,
+      _kBallStyle,
+      _kPinStyle,
+      _kGames,
+      _kWins,
+      _kBest,
+      _kStrikes,
+      _kIsPro,
+    ]) {
+      await p.remove(k);
+    }
+    for (final k in p.getKeys().where((k) => k.startsWith(_kCustomPrefix)).toList()) {
+      await p.remove(k);
+    }
+    musicOn = true;
+    sfxOn = true;
+    volume = 0.8;
+    mode = 0;
+    difficulty = 1;
+    playerNames = List.of(defaultNames);
+    themeId = 'classic';
+    ballStyle = 0;
+    pinStyle = 0;
+    gamesPlayed = 0;
+    humanWins = 0;
+    bestScore = 0;
+    strikes = 0;
+    isPro = true;
+    customColors = Map.of(_defaultCustomColors);
+    notifyListeners();
+  }
+
   Future<void> setCustomColor(String key, int argb) async {
     if (!isPro) return; // custom alley creator is a Pro feature
     if (!_defaultCustomColors.containsKey(key)) return;

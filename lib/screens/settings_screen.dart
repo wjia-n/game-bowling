@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../cheat_menu.dart';
+import '../engine/bowling_engine.dart';
 import '../services/audio_service.dart';
 import '../services/iap_service.dart';
 import '../services/settings_service.dart';
@@ -14,11 +16,17 @@ class SettingsScreen extends StatelessWidget {
   final AlleySettings settings;
   final StoreService store;
 
+  /// Optional live engine: when settings is opened mid-match (via the pause
+  /// overlay), the cheat menu can skip throws / force a win. From the menu
+  /// screen there is no live engine, so those two cheats are hidden.
+  final BowlingEngine? engine;
+
   const SettingsScreen(
       {super.key,
       required this.audio,
       required this.settings,
-      required this.store});
+      required this.store,
+      this.engine});
 
   @override
   Widget build(BuildContext context) {
@@ -131,6 +139,25 @@ class SettingsScreen extends StatelessWidget {
                         ProScreen(audio: audio, settings: s, store: store)));
               }),
             ]),
+            const SizedBox(height: 16),
+            // Version label — 5 rapid taps opens the cheat menu (testing).
+            Center(
+              child: CheatMenuTrigger(
+                callbacks: CheatCallbacks(
+                  onSkipLevel:
+                      engine == null ? null : () => engine!.cheatSkipThrow(),
+                  onInstantWin:
+                      engine == null ? null : () => engine!.cheatInstantWin(),
+                  onUnlockAll: () => s.unlockAll(),
+                  onResetGame: () => s.resetAll(),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Text('Bowling 1.0.1 (build 2)',
+                      style: Alley.body(12, theme: t, color: t.muted)),
+                ),
+              ),
+            ),
           ],
         ),
       ),

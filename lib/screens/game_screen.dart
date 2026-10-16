@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:in_app_review/in_app_review.dart';
+import '../cheat_menu.dart';
 import '../engine/bowling_engine.dart';
 import '../services/audio_service.dart';
 import '../services/iap_service.dart';
@@ -31,10 +33,12 @@ class GameScreen extends StatefulWidget {
   State<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
+class _GameScreenState extends State<GameScreen>
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   BowlingEngine get _e => widget.engine;
   AlleyThemeDef get _t => widget.theme;
   bool _reviewAsked = false;
+  Ticker? _ticker;
 
   @override
   void initState() {
@@ -42,12 +46,28 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     _e.onEvent = _onEvent;
     _e.addListener(_onEngine);
+    // The throw/scatter animations are time-based (DateTime.now()) and the
+    // engine doesn't notify mid-animation, so repaint continuously while
+    // the ball is rolling or pins are scattering — otherwise the ball
+    // renders at the release point then teleports to the pins.
+    _ticker = createTicker(_onTick)..start();
     widget.audio.startGameMusic();
+  }
+
+  /// Repaint only while an animation is actually running; static screens
+  /// (aiming, settling, overlays) repaint via the engine's notifyListeners.
+  void _onTick(Duration _) {
+    if (!mounted) return;
+    if (_e.phase == BowlPhase.throwing ||
+        _e.phase == BowlPhase.scattering) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _ticker?.dispose();
     _e.removeListener(_onEngine);
     _e.onEvent = null;
     _e.dispose();
@@ -384,7 +404,23 @@ class _GameScreenState extends State<GameScreen> with WidgetsBindingObserver {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Paused', style: Alley.display(30, theme: t)),
+              CheatMenuTrigger(
+                // Discreet debug trigger: 5 rapid taps on "Paused" opens
+                // the cheat menu (engine is only live on this screen).
+                callbacks: CheatCallbacks(
+                  onSkipLevel: () {
+                    _resume();
+                    _e.cheatSkipThrow();
+                  },
+                  onInstantWin: () {
+                    _resume();
+                    _e.cheatInstantWin();
+                  },
+                  onUnlockAll: () => widget.settings.setPro(true),
+                  onResetGame: () => _e.restart(),
+                ),
+                child: Text('Paused', style: Alley.display(30, theme: t)),
+              ),
               const SizedBox(height: 6),
               Text('The lane is waiting…',
                   style: Alley.body(14, theme: t, color: t.muted)),
